@@ -69,6 +69,8 @@
     
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(200 100% 40%), hsl(204 100% 33%));
+    --gradient-hero: linear-gradient(180deg, hsl(200 100% 30% / 0.6) 0%, hsl(0 0% 0%) 50%);
+    --gradient-header: linear-gradient(180deg, hsl(210 100% 25%) 0%, hsl(200 100% 20%) 50%, hsl(0 0% 5%) 100%);
     --gradient-glow: radial-gradient(ellipse at center, hsl(200 100% 40% / 0.3), transparent 70%);
     
     /* Shadows */
@@ -145,12 +147,28 @@
     box-shadow: var(--shadow-glow);
   }
   
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+  
+  .bg-gradient-header {
+    background: var(--gradient-header);
+  }
+  
   .animate-fade-in {
     animation: fadeIn 0.3s ease-out forwards;
   }
   
   .animate-slide-up {
     animation: slideUp 0.3s ease-out forwards;
+  }
+  
+  .animate-slide-in-left {
+    animation: slideInLeft 0.3s ease-out forwards;
+  }
+  
+  .animate-slide-in-right {
+    animation: slideInRight 0.3s ease-out forwards;
   }
   
   .animate-pulse-glow {
@@ -171,6 +189,28 @@
   to { 
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from { 
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from { 
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
