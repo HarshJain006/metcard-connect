@@ -2,12 +2,12 @@ import { useState, useRef, useEffect } from 'react';
 import { useChatStore, type ChatMessage } from '@/stores/chatStore';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Camera, Send, X, Loader2, Building, Mail, Phone, User, Briefcase, Plus, Check, Edit3, Image } from 'lucide-react';
+import { Camera, Send, X, Loader2, Building, Mail, Phone, User, Briefcase, Check, Edit3, Image } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Contact } from '@/stores/chatStore';
 
 const ChatPage = () => {
-  const { messages, isProcessing, extractContact, extractContactFromText, appendContact } = useChatStore();
+  const { messages, isProcessing, extractContact, extractContactFromText, updateContactInSheet } = useChatStore();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [textInput, setTextInput] = useState('');
@@ -80,7 +80,7 @@ const ChatPage = () => {
             <MessageBubble 
               key={message.id} 
               message={message} 
-              onAddToSheet={appendContact}
+              onUpdateContact={updateContactInSheet}
             />
           ))}
         </div>
@@ -185,22 +185,30 @@ const ChatPage = () => {
 
 interface MessageBubbleProps {
   message: ChatMessage;
-  onAddToSheet: (contact: Contact) => Promise<boolean>;
+  onUpdateContact: (messageId: string, contact: Contact) => Promise<boolean>;
 }
 
-const MessageBubble = ({ message, onAddToSheet }: MessageBubbleProps) => {
+const MessageBubble = ({ message, onUpdateContact }: MessageBubbleProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContact, setEditedContact] = useState<Contact | null>(message.contact || null);
-  const [isAdding, setIsAdding] = useState(false);
-  const [isAdded, setIsAdded] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  
+  // Check if contact has been modified from original
+  const hasChanges = editedContact && message.originalContact && (
+    editedContact.name !== message.originalContact.name ||
+    editedContact.company !== message.originalContact.company ||
+    editedContact.title !== message.originalContact.title ||
+    editedContact.phone !== message.originalContact.phone ||
+    editedContact.email !== message.originalContact.email
+  );
 
-  const handleAddToSheet = async () => {
+  const handleUpdateSheet = async () => {
     if (!editedContact) return;
-    setIsAdding(true);
-    const success = await onAddToSheet(editedContact);
-    setIsAdding(false);
+    setIsUpdating(true);
+    const success = await onUpdateContact(message.id, editedContact);
+    setIsUpdating(false);
     if (success) {
-      setIsAdded(true);
+      setIsEditing(false);
     }
   };
 
@@ -259,36 +267,51 @@ const MessageBubble = ({ message, onAddToSheet }: MessageBubbleProps) => {
               )}
             </div>
 
-            {/* Actions */}
-            {!isAdded && (
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleAddToSheet}
-                  disabled={isAdding}
-                  className="flex-1 bg-primary hover:bg-primary-dark text-primary-foreground"
-                >
-                  {isAdding ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Plus className="w-4 h-4 mr-2" />
-                  )}
-                  Add to Sheet
-                </Button>
+            {/* Actions - Only show edit and update when there are changes */}
+            <div className="flex gap-2">
+              {!isEditing ? (
                 <Button
                   variant="ghost"
-                  size="icon"
-                  onClick={() => setIsEditing(!isEditing)}
-                  className="text-muted-foreground hover:text-foreground"
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                  className="flex-1 text-muted-foreground hover:text-foreground"
                 >
-                  <Edit3 className="w-4 h-4" />
+                  <Edit3 className="w-4 h-4 mr-2" />
+                  Edit Contact
                 </Button>
-              </div>
-            )}
-
-            {isAdded && (
-              <div className="flex items-center gap-2 text-green-500 text-sm">
-                <Check className="w-4 h-4" />
-                <span>Added to your sheet!</span>
+              ) : (
+                <>
+                  {hasChanges && (
+                    <Button
+                      onClick={handleUpdateSheet}
+                      disabled={isUpdating}
+                      className="flex-1 bg-primary hover:bg-primary-dark text-primary-foreground"
+                    >
+                      {isUpdating ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Check className="w-4 h-4 mr-2" />
+                      )}
+                      Update Sheet
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditing(false)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    Done
+                  </Button>
+                </>
+              )}
+            </div>
+            
+            {/* Saved indicator */}
+            {message.savedToSheet && !isEditing && (
+              <div className="flex items-center gap-2 text-primary/70 text-xs">
+                <Check className="w-3 h-3" />
+                <span>Saved to sheet</span>
               </div>
             )}
           </div>
