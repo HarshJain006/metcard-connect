@@ -1,7 +1,7 @@
 import { create } from 'zustand';
+import { API_BASE_URL, API_ENDPOINTS } from '@/config';
 import { DEMO_MODE, generateMockContact } from '@/lib/mockData';
 import { useAuthStore } from './authStore';
-import * as api from '@/lib/api';
 
 export interface Contact {
   id: string;
@@ -22,8 +22,6 @@ export interface ChatMessage {
   contact?: Contact;
   isLoading?: boolean;
   timestamp: Date;
-  savedToSheet?: boolean;  // Track if auto-saved
-  originalContact?: Contact; // For tracking changes
 }
 
 interface ChatState {
@@ -40,7 +38,7 @@ interface ChatState {
   // API Actions
   extractContact: (imageFile: File) => Promise<Contact | null>;
   extractContactFromText: (text: string) => Promise<Contact | null>;
-  updateContactInSheet: (messageId: string, contact: Contact) => Promise<boolean>;
+  appendContact: (contact: Contact) => Promise<boolean>;
 }
 
 const generateId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -114,7 +112,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     
     setProcessing(true);
 
-    // Demo mode - simulate extraction with auto-save
+    // Demo mode - simulate extraction
     if (isDemoMode || DEMO_MODE) {
       await new Promise(resolve => setTimeout(resolve, 1500));
       const contact = generateMockContact();
@@ -122,14 +120,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       updateMessage(loadingId, {
         isLoading: false,
         contact,
-        originalContact: { ...contact }, // Store original for comparison
-        savedToSheet: true,
-        content: 'Contact extracted and saved to your sheet:',
-      });
-      
-      addMessage({
-        type: 'system',
-        content: `✅ ${contact.name} has been automatically added to your Google Sheet!`,
+        content: 'I found the following contact information:',
       });
       
       setProcessing(false);
@@ -137,21 +128,26 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
     
     try {
-      const result = await api.extractContactFromImage(imageFile);
-      const contact = result.contact;
+      const formData = new FormData();
+      formData.append('image', imageFile);
       
-      // Update loading message with contact - auto-saved by backend
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.EXTRACT_CONTACT}`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to extract contact');
+      }
+      
+      const contact: Contact = await response.json();
+      
+      // Update loading message with contact
       updateMessage(loadingId, {
         isLoading: false,
         contact,
-        originalContact: { ...contact },
-        savedToSheet: true,
-        content: 'Contact extracted and saved to your sheet:',
-      });
-      
-      addMessage({
-        type: 'system',
-        content: `✅ ${contact.name} has been automatically added to your Google Sheet!`,
+        content: 'I found the following contact information:',
       });
       
       setProcessing(false);
@@ -185,7 +181,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     
     setProcessing(true);
 
-    // Demo mode - simulate extraction with auto-save
+    // Demo mode - simulate extraction
     if (isDemoMode || DEMO_MODE) {
       await new Promise(resolve => setTimeout(resolve, 1500));
       const contact = generateMockContact();
@@ -193,14 +189,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       updateMessage(loadingId, {
         isLoading: false,
         contact,
-        originalContact: { ...contact },
-        savedToSheet: true,
-        content: 'Contact extracted and saved to your sheet:',
-      });
-      
-      addMessage({
-        type: 'system',
-        content: `✅ ${contact.name} has been automatically added to your Google Sheet!`,
+        content: 'I found the following contact information:',
       });
       
       setProcessing(false);
@@ -208,20 +197,25 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
     
     try {
-      const result = await api.extractContactFromText(text);
-      const contact = result.contact;
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.EXTRACT_CONTACT}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to extract contact');
+      }
+      
+      const contact: Contact = await response.json();
       
       updateMessage(loadingId, {
         isLoading: false,
         contact,
-        originalContact: { ...contact },
-        savedToSheet: true,
-        content: 'Contact extracted and saved to your sheet:',
-      });
-      
-      addMessage({
-        type: 'system',
-        content: `✅ ${contact.name} has been automatically added to your Google Sheet!`,
+        content: 'I found the following contact information:',
       });
       
       setProcessing(false);
@@ -237,45 +231,45 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
 
-  updateContactInSheet: async (messageId: string, contact: Contact) => {
-    const { addMessage, updateMessage } = get();
+  appendContact: async (contact: Contact) => {
+    const { addMessage } = get();
     const isDemoMode = useAuthStore.getState().isDemoMode;
 
-    // Demo mode - simulate update
+    // Demo mode - simulate adding
     if (isDemoMode || DEMO_MODE) {
       await new Promise(resolve => setTimeout(resolve, 500));
-      
-      updateMessage(messageId, {
-        contact,
-        originalContact: { ...contact },
-      });
-      
       addMessage({
         type: 'system',
-        content: `✅ ${contact.name}'s contact has been updated in your Google Sheet!`,
+        content: `✅ ${contact.name} has been added to your Google Sheet!`,
       });
       return true;
     }
     
     try {
-      await api.updateContact(contact.id, contact);
-      
-      updateMessage(messageId, {
-        contact,
-        originalContact: { ...contact },
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.APPEND_CONTACT}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contact),
+        credentials: 'include',
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to add contact to sheet');
+      }
       
       addMessage({
         type: 'system',
-        content: `✅ ${contact.name}'s contact has been updated in your Google Sheet!`,
+        content: `✅ ${contact.name} has been added to your Google Sheet!`,
       });
       
       return true;
     } catch (error) {
-      console.error('Update contact error:', error);
+      console.error('Append contact error:', error);
       addMessage({
         type: 'system',
-        content: '❌ Failed to update contact in sheet. Please try again.',
+        content: '❌ Failed to add contact to sheet. Please try again.',
       });
       return false;
     }

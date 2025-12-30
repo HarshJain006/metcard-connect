@@ -2,11 +2,9 @@ import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useChatStore } from '@/stores/chatStore';
-import { useThemeStore } from '@/stores/themeStore';
 import { APP_INFO } from '@/config';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Switch } from '@/components/ui/switch';
 import { 
   MessageSquare, 
   FileSpreadsheet, 
@@ -14,10 +12,9 @@ import {
   Crown, 
   Trash2, 
   LogOut, 
+  Menu, 
   X,
-  CreditCard,
-  Sun,
-  Moon
+  CreditCard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -42,7 +39,6 @@ const AppSidebar = ({ isMobile = false, isOpen = true, onClose }: AppSidebarProp
   const location = useLocation();
   const { user, logout } = useAuthStore();
   const { clearChat } = useChatStore();
-  const { theme, toggleTheme } = useThemeStore();
 
   const navItems = [
     { path: '/', icon: MessageSquare, label: 'Chat' },
@@ -57,7 +53,7 @@ const AppSidebar = ({ isMobile = false, isOpen = true, onClose }: AppSidebarProp
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-gradient-sidebar text-sidebar-foreground" style={{ boxShadow: 'var(--shadow-sidebar)' }}>
+    <div className="flex flex-col h-full bg-sidebar text-sidebar-foreground">
       {/* Header */}
       <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
@@ -154,21 +150,6 @@ const AppSidebar = ({ isMobile = false, isOpen = true, onClose }: AppSidebarProp
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-        </div>
-        
-        {/* Theme Toggle */}
-        <div className="px-3 mt-4">
-          <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-sidebar-accent/50">
-            <div className="flex items-center gap-3 text-muted-foreground">
-              {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-              <span className="text-sm">{theme === 'dark' ? 'Dark' : 'Light'} Mode</span>
-            </div>
-            <Switch
-              checked={theme === 'light'}
-              onCheckedChange={toggleTheme}
-              className="data-[state=checked]:bg-primary"
-            />
-          </div>
         </div>
       </ScrollArea>
 
