@@ -57,7 +57,7 @@ const AppSidebar = ({ isMobile = false, isOpen = true, onClose }: AppSidebarProp
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-sidebar text-sidebar-foreground">
+    <div className="flex flex-col h-full bg-gradient-sidebar text-sidebar-foreground" style={{ boxShadow: 'var(--shadow-sidebar)' }}>
       {/* Header */}
       <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
