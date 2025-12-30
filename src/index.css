@@ -8,15 +8,15 @@
 
 @layer base {
   :root {
-    /* Primary Royal Blue */
-    --primary: 220 90% 50%;
+    /* Primary Blue - matching reference */
+    --primary: 217 85% 55%;
     --primary-foreground: 0 0% 100%;
     
-    /* Darker Royal Blue Accent */
-    --primary-dark: 225 85% 40%;
+    /* Darker Blue Accent */
+    --primary-dark: 220 80% 45%;
     
-    /* Light Royal Blue for highlights */
-    --primary-light: 215 95% 60%;
+    /* Light Blue for highlights */
+    --primary-light: 215 90% 62%;
     
     /* Background scale - blacks and grays */
     --background: 0 0% 0%;
@@ -51,10 +51,10 @@
     
     --radius: 0.75rem;
     
-    /* Chat specific */
-    --chat-user: 200 100% 40%;
+    /* Chat specific - matching primary blue */
+    --chat-user: 217 85% 55%;
     --chat-user-foreground: 0 0% 100%;
-    --chat-bot: 0 0% 20%;
+    --chat-bot: 220 15% 18%;
     --chat-bot-foreground: 0 0% 95%;
     
     /* Sidebar */
@@ -67,12 +67,12 @@
     --sidebar-border: 0 0% 15%;
     --sidebar-ring: 200 100% 40%;
     
-    /* Gradients - Royal Blue for main areas */
-    --gradient-primary: linear-gradient(135deg, hsl(220 90% 50%), hsl(225 85% 40%));
-    --gradient-hero: linear-gradient(180deg, hsl(225 80% 25%) 0%, hsl(230 60% 12%) 40%, hsl(0 0% 0%) 100%);
-    --gradient-header: linear-gradient(180deg, hsl(225 75% 30%) 0%, hsl(228 65% 18%) 50%, hsl(230 40% 8%) 100%);
-    --gradient-glow: radial-gradient(ellipse at center, hsl(220 90% 50% / 0.2), transparent 70%);
-    --gradient-card: linear-gradient(165deg, hsl(225 60% 15% / 0.4) 0%, hsl(0 0% 5%) 100%);
+    /* Gradients - Deep Blue matching reference */
+    --gradient-primary: linear-gradient(135deg, hsl(217 85% 55%), hsl(220 80% 45%));
+    --gradient-hero: linear-gradient(180deg, hsl(220 60% 22%) 0%, hsl(225 50% 10%) 50%, hsl(0 0% 0%) 100%);
+    --gradient-header: linear-gradient(180deg, hsl(218 55% 28%) 0%, hsl(222 50% 15%) 50%, hsl(225 40% 5%) 100%);
+    --gradient-glow: radial-gradient(ellipse at center, hsl(217 85% 55% / 0.15), transparent 70%);
+    --gradient-card: linear-gradient(165deg, hsl(220 40% 15% / 0.5) 0%, hsl(0 0% 5%) 100%);
     
     /* Sidebar - Metallic Matte Black Royal */
     --sidebar-background: 220 10% 5%;
@@ -83,7 +83,7 @@
     --gradient-sidebar: linear-gradient(145deg, hsl(220 10% 12%) 0%, hsl(220 8% 6%) 50%, hsl(220 5% 3%) 100%);
     
     /* Shadows */
-    --shadow-glow: 0 0 40px hsl(220 90% 50% / 0.25);
+    --shadow-glow: 0 0 40px hsl(217 85% 55% / 0.2);
     --shadow-card: 0 4px 20px hsl(0 0% 0% / 0.5);
     --shadow-sidebar: 0 8px 32px hsl(0 0% 0% / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.03);
   }
