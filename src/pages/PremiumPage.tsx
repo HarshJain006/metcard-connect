@@ -12,8 +12,8 @@ const PremiumPage = () => {
   ];
 
   return (
-    <div className="flex items-center justify-center min-h-full p-6 bg-gradient-header">
-      <Card className="max-w-md w-full bg-card/80 backdrop-blur-sm border-border/50 p-8 text-center space-y-6">
+    <div className="flex items-center justify-center min-h-full p-6">
+      <Card className="max-w-md w-full bg-card border-border/50 p-8 text-center space-y-6">
         <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center">
           <Crown className="w-10 h-10 text-white" />
         </div>

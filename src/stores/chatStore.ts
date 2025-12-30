@@ -37,7 +37,6 @@ interface ChatState {
   
   // API Actions
   extractContact: (imageFile: File) => Promise<Contact | null>;
-  extractContactFromText: (text: string) => Promise<Contact | null>;
   appendContact: (contact: Contact) => Promise<boolean>;
 }
 
@@ -157,74 +156,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
       updateMessage(loadingId, {
         isLoading: false,
         content: 'Sorry, I couldn\'t extract the contact information. Please try again with a clearer image.',
-      });
-      setProcessing(false);
-      return null;
-    }
-  },
-
-  extractContactFromText: async (text: string) => {
-    const { addMessage, updateMessage, setProcessing } = get();
-    const isDemoMode = useAuthStore.getState().isDemoMode;
-    
-    // Add user message with text
-    addMessage({
-      type: 'user',
-      content: text,
-    });
-    
-    // Add loading bot message
-    const loadingId = addMessage({
-      type: 'bot',
-      isLoading: true,
-    });
-    
-    setProcessing(true);
-
-    // Demo mode - simulate extraction
-    if (isDemoMode || DEMO_MODE) {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const contact = generateMockContact();
-      
-      updateMessage(loadingId, {
-        isLoading: false,
-        contact,
-        content: 'I found the following contact information:',
-      });
-      
-      setProcessing(false);
-      return contact;
-    }
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.EXTRACT_CONTACT}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text }),
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to extract contact');
-      }
-      
-      const contact: Contact = await response.json();
-      
-      updateMessage(loadingId, {
-        isLoading: false,
-        contact,
-        content: 'I found the following contact information:',
-      });
-      
-      setProcessing(false);
-      return contact;
-    } catch (error) {
-      console.error('Extract contact from text error:', error);
-      updateMessage(loadingId, {
-        isLoading: false,
-        content: "Sorry, I couldn't extract the contact information. Please try again.",
       });
       setProcessing(false);
       return null;

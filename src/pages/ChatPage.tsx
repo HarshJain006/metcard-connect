@@ -2,19 +2,16 @@ import { useState, useRef, useEffect } from 'react';
 import { useChatStore, type ChatMessage } from '@/stores/chatStore';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Camera, Send, X, Loader2, Building, Mail, Phone, User, Briefcase, Plus, Check, Edit3, Image } from 'lucide-react';
+import { Camera, Send, X, Loader2, Building, Mail, Phone, User, Briefcase, Plus, Check, Edit3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Contact } from '@/stores/chatStore';
 
 const ChatPage = () => {
-  const { messages, isProcessing, extractContact, extractContactFromText, appendContact } = useChatStore();
+  const { messages, isProcessing, extractContact, appendContact, clearChat } = useChatStore();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [textInput, setTextInput] = useState('');
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -23,56 +20,37 @@ const ChatPage = () => {
     }
   }, [messages]);
 
-  // Auto-resize textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + 'px';
-    }
-  }, [textInput]);
-
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedImage(file);
       setPreviewUrl(URL.createObjectURL(file));
-      setTextInput('');
     }
   };
 
   const handleSend = async () => {
-    if (selectedImage) {
-      await extractContact(selectedImage);
-      setSelectedImage(null);
-      setPreviewUrl(null);
-      if (cameraInputRef.current) cameraInputRef.current.value = '';
-      if (galleryInputRef.current) galleryInputRef.current.value = '';
-    } else if (textInput.trim()) {
-      await extractContactFromText(textInput.trim());
-      setTextInput('');
+    if (!selectedImage) return;
+    
+    await extractContact(selectedImage);
+    setSelectedImage(null);
+    setPreviewUrl(null);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
   const handleClearImage = () => {
     setSelectedImage(null);
     setPreviewUrl(null);
-    if (cameraInputRef.current) cameraInputRef.current.value = '';
-    if (galleryInputRef.current) galleryInputRef.current.value = '';
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (!isProcessing && (selectedImage || textInput.trim())) {
-        handleSend();
-      }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
-  const canSend = selectedImage || textInput.trim();
-
   return (
-    <div className="flex flex-col h-full bg-gradient-hero">
+    <div className="flex flex-col h-full bg-background">
       {/* Chat Messages */}
       <ScrollArea ref={scrollRef} className="flex-1 px-4 py-4">
         <div className="max-w-2xl mx-auto space-y-4">
@@ -87,7 +65,7 @@ const ChatPage = () => {
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="border-t border-border/30 bg-surface-1/95 backdrop-blur-sm px-4 py-3">
+      <div className="border-t border-border bg-surface-1 px-4 py-3">
         <div className="max-w-2xl mx-auto">
           {/* Preview */}
           {previewUrl && (
@@ -107,68 +85,35 @@ const ChatPage = () => {
           )}
 
           {/* Input Bar */}
-          <div className="flex items-end gap-2">
-            {/* Hidden file inputs */}
+          <div className="flex items-center gap-3">
             <input
-              ref={cameraInputRef}
+              ref={fileInputRef}
               type="file"
               accept="image/*"
               capture="environment"
               onChange={handleImageSelect}
               className="hidden"
             />
-            <input
-              ref={galleryInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageSelect}
-              className="hidden"
-            />
             
-            {/* Camera button */}
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => cameraInputRef.current?.click()}
+              onClick={() => fileInputRef.current?.click()}
               disabled={isProcessing}
-              className="h-11 w-11 shrink-0 rounded-full bg-surface-2 hover:bg-surface-3 text-muted-foreground hover:text-primary transition-colors"
-              title="Take a photo"
+              className="h-12 w-12 rounded-full bg-surface-2 hover:bg-surface-3 text-muted-foreground hover:text-primary transition-colors"
             >
-              <Camera className="w-5 h-5" />
+              <Camera className="w-6 h-6" />
             </Button>
 
-            {/* Gallery button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => galleryInputRef.current?.click()}
-              disabled={isProcessing}
-              className="h-11 w-11 shrink-0 rounded-full bg-surface-2 hover:bg-surface-3 text-muted-foreground hover:text-primary transition-colors"
-              title="Upload from gallery"
-            >
-              <Image className="w-5 h-5" />
-            </Button>
-
-            {/* Text input */}
-            <div className="flex-1 bg-surface-2 rounded-2xl px-4 py-2.5 min-h-[44px] flex items-center">
-              <textarea
-                ref={textareaRef}
-                value={textInput}
-                onChange={(e) => setTextInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={selectedImage ? selectedImage.name : "Type contact details or take a photo..."}
-                disabled={isProcessing || !!selectedImage}
-                rows={1}
-                className="w-full bg-transparent text-foreground placeholder:text-muted-foreground text-sm resize-none focus:outline-none disabled:opacity-50"
-              />
+            <div className="flex-1 bg-surface-2 rounded-full px-4 py-3 text-muted-foreground text-sm">
+              {selectedImage ? selectedImage.name : 'Take or upload a business card photo...'}
             </div>
 
-            {/* Send button */}
             <Button
               onClick={handleSend}
-              disabled={!canSend || isProcessing}
+              disabled={!selectedImage || isProcessing}
               size="icon"
-              className="h-11 w-11 shrink-0 rounded-full bg-primary hover:bg-primary-dark text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="h-12 w-12 rounded-full bg-primary hover:bg-primary-dark text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {isProcessing ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
