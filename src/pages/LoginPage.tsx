@@ -8,10 +8,10 @@ const LoginPage = () => {
   const { login, loginDemo, isLoading } = useAuthStore();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-header p-4">
       {/* Background glow effect */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/10 blur-[120px]" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/15 blur-[120px]" />
       </div>
 
       <Card className="w-full max-w-md bg-card border-border/50 shadow-2xl relative z-10 animate-bounce-in">
