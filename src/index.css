@@ -122,14 +122,14 @@
     --chat-bot: 230 15% 95%;
     --chat-bot-foreground: 230 15% 15%;
     
-    /* Sidebar - same base as main background (no visible divider) */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 230 15% 25%;
+    /* Sidebar - always dark (same as dark theme) */
+    --sidebar-background: 0 0% 0%;
+    --sidebar-foreground: 0 0% 80%;
     --sidebar-primary: 235 64% 41%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 230 15% 93%;
-    --sidebar-accent-foreground: 230 15% 15%;
-    --sidebar-border: 0 0% 100%;
+    --sidebar-accent: 230 12% 10%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 0%;
     --sidebar-ring: 235 64% 41%;
     
     /* Gradients - blue accents on light */
