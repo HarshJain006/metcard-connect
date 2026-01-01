@@ -194,7 +194,7 @@ const AppSidebar = ({ isMobile = false, isOpen = true, onClose }: AppSidebarProp
   }
 
   return (
-    <div className="hidden md:flex w-72 border-r border-border">
+    <div className="hidden md:flex w-72">
       {sidebarContent}
     </div>
   );
