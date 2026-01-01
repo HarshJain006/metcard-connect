@@ -17,6 +17,7 @@ import {
   CreditCard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ThemeToggle from '@/components/ThemeToggle';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -155,14 +156,17 @@ const AppSidebar = ({ isMobile = false, isOpen = true, onClose }: AppSidebarProp
 
       {/* Footer */}
       <div className="p-4 border-t border-sidebar-border space-y-3">
-        <Button 
-          variant="ghost" 
-          onClick={logout}
-          className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive hover:bg-sidebar-accent"
-        >
-          <LogOut className="w-5 h-5" />
-          Sign Out
-        </Button>
+        <div className="flex items-center justify-between">
+          <Button 
+            variant="ghost" 
+            onClick={logout}
+            className="flex-1 justify-start gap-3 text-muted-foreground hover:text-destructive hover:bg-sidebar-accent"
+          >
+            <LogOut className="w-5 h-5" />
+            Sign Out
+          </Button>
+          <ThemeToggle />
+        </div>
         <p className="text-xs text-muted-foreground text-center">
           Powered by Groq + Google Sheets
         </p>
