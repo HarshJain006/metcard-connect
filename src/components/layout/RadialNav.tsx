@@ -153,8 +153,8 @@ const RadialNav = () => {
             </button>
           </nav>
 
-          {/* Theme Toggle - bottom */}
-          <div className="absolute bottom-8 left-8">
+          {/* Theme Toggle - bottom center */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 pl-4">
             <ThemeToggle />
           </div>
         </div>
