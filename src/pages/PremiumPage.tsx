@@ -21,7 +21,7 @@ const PremiumPage = () => {
         <div className="space-y-2">
           <h1 className="text-2xl font-bold">Go Premium</h1>
           <p className="text-muted-foreground">
-            Unlock the full power of All We Met
+            Unlock the full power of SaveMyName
           </p>
         </div>
 

@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "robots.txt", "pwa-192x192.png", "pwa-512x512.png"],
       manifest: {
-        name: "All We Met",
-        short_name: "AllWeMet",
+        name: "SaveMyName",
+        short_name: "SaveMyName",
         description: "Scan business cards → Organize contacts in Google Sheets",
         theme_color: "#0088cc",
         background_color: "#000000",

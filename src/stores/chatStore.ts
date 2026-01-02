@@ -48,7 +48,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     {
       id: 'welcome',
       type: 'system',
-      content: 'Welcome to All We Met! 📸 Take a photo of a business card to get started.',
+      content: 'Welcome to SaveMyName! 📸 Take a photo of a business card to get started.',
       timestamp: new Date(),
     },
   ],

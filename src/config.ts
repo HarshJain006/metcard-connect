@@ -1,6 +1,6 @@
 // API Configuration
 // Change this to your backend URL (Docker container base URL)
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://savemyname.in';
 
 // API Endpoints
 export const API_ENDPOINTS = {
@@ -17,7 +17,7 @@ export const API_ENDPOINTS = {
 
 // App Info
 export const APP_INFO = {
-  name: 'All We Met',
+  name: 'SaveMyName',
   tagline: 'Scan business cards → Organize contacts in Google Sheets',
   version: '1.0.0',
 } as const;
