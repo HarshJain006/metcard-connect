@@ -60,7 +60,7 @@ const RadialNav = () => {
       <div 
         className={cn(
           "fixed left-0 top-1/2 -translate-y-1/2 z-50 transition-all duration-500 ease-out",
-          isOpen ? "translate-x-0" : "-translate-x-[calc(100%-3rem)]"
+          isOpen ? "translate-x-0" : "-translate-x-[calc(100%-1.5rem)] md:-translate-x-[calc(100%-3rem)]"
         )}
       >
         {/* Semi-circle background */}
