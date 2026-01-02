@@ -8,73 +8,73 @@
 
 @layer base {
   :root {
-    /* 70% Black / 30% Navy Blue Balance */
-    /* Navy accent: #2632AD */
+    /* SaveMyName - Deep Navy Blue Theme */
+    /* Primary accent: #2632AD */
     
-    --primary: 235 64% 41%;
+    --primary: 235 64% 42%;
     --primary-foreground: 0 0% 100%;
     
-    --primary-dark: 235 77% 25%;
-    --primary-light: 235 64% 50%;
+    --primary-dark: 235 77% 30%;
+    --primary-light: 235 64% 55%;
     
-    /* Background scale - true blacks (70% of UI) */
-    --background: 0 0% 0%;
+    /* Background scale - deep navy blues */
+    --background: 228 40% 8%;
     --foreground: 0 0% 95%;
     
-    /* Surface levels - dark with subtle navy tint */
-    --surface-1: 230 15% 6%;
-    --surface-2: 230 12% 10%;
-    --surface-3: 230 10% 15%;
+    /* Surface levels - navy with depth */
+    --surface-1: 228 35% 10%;
+    --surface-2: 228 30% 13%;
+    --surface-3: 228 25% 18%;
     
-    --card: 230 15% 6%;
+    --card: 228 35% 10%;
     --card-foreground: 0 0% 95%;
     
-    --popover: 230 15% 6%;
+    --popover: 228 35% 10%;
     --popover-foreground: 0 0% 95%;
     
-    --secondary: 230 12% 10%;
+    --secondary: 228 30% 13%;
     --secondary-foreground: 0 0% 95%;
     
-    --muted: 230 10% 18%;
+    --muted: 228 25% 20%;
     --muted-foreground: 0 0% 55%;
     
-    --accent: 235 64% 41%;
+    --accent: 235 64% 42%;
     --accent-foreground: 0 0% 100%;
     
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 230 10% 15%;
-    --input: 230 10% 15%;
-    --ring: 235 64% 41%;
+    --border: 228 25% 18%;
+    --input: 228 25% 18%;
+    --ring: 235 64% 42%;
     
     --radius: 0.75rem;
     
     /* Chat specific - blue accent for user messages only */
-    --chat-user: 235 64% 38%;
+    --chat-user: 235 64% 42%;
     --chat-user-foreground: 0 0% 100%;
-    --chat-bot: 230 10% 12%;
+    --chat-bot: 228 30% 14%;
     --chat-bot-foreground: 0 0% 95%;
     
-    /* Sidebar - same base as main background (no visible divider) */
-    --sidebar-background: 0 0% 0%;
+    /* Sidebar - matches main background */
+    --sidebar-background: 228 40% 8%;
     --sidebar-foreground: 0 0% 80%;
-    --sidebar-primary: 235 64% 41%;
+    --sidebar-primary: 235 64% 42%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 230 12% 10%;
+    --sidebar-accent: 228 30% 13%;
     --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 0%;
-    --sidebar-ring: 235 64% 41%;
+    --sidebar-border: 228 25% 15%;
+    --sidebar-ring: 235 64% 42%;
     
-    /* Gradients - subtle blue accents on black */
-    --gradient-primary: linear-gradient(135deg, hsl(235 64% 41%), hsl(235 64% 30%));
-    --gradient-hero: linear-gradient(180deg, hsl(235 64% 25% / 0.4) 0%, hsl(0 0% 0%) 60%);
-    --gradient-header: linear-gradient(180deg, hsl(235 64% 35%) 0%, hsl(230 20% 8%) 50%, hsl(0 0% 0%) 100%);
-    --gradient-glow: radial-gradient(ellipse at center, hsl(235 64% 41% / 0.25), transparent 70%);
+    /* Gradients - navy blue depth */
+    --gradient-primary: linear-gradient(135deg, hsl(235 64% 42%), hsl(235 64% 32%));
+    --gradient-hero: linear-gradient(180deg, hsl(235 50% 20% / 0.6) 0%, hsl(228 40% 8%) 60%);
+    --gradient-header: linear-gradient(180deg, hsl(235 64% 35%) 0%, hsl(228 35% 12%) 50%, hsl(228 40% 8%) 100%);
+    --gradient-glow: radial-gradient(ellipse at center top, hsl(235 64% 35% / 0.35), transparent 60%);
     
     /* Shadows */
-    --shadow-glow: 0 0 40px hsl(235 64% 41% / 0.3);
-    --shadow-card: 0 4px 20px hsl(235 77% 4% / 0.6);
+    --shadow-glow: 0 0 40px hsl(235 64% 42% / 0.3);
+    --shadow-card: 0 4px 20px hsl(228 40% 4% / 0.6);
   }
 
   /* Light theme */
