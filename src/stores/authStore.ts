@@ -131,7 +131,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'all-we-met-auth',
+      name: 'savemyname-auth',
       partialize: (state) => ({ 
         user: state.user, 
         isDemoMode: state.isDemoMode 
