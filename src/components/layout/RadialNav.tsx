@@ -13,7 +13,8 @@ import {
   Trash2,
   Download,
   Moon,
-  Sun
+  Sun,
+  Smartphone
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
@@ -76,6 +77,7 @@ const RadialNav = () => {
     { path: '/sheet', icon: FileSpreadsheet, label: 'Contacts' },
     { path: '/history', icon: Clock, label: 'History' },
     { path: '/premium', icon: Crown, label: 'Premium' },
+    { path: '/install', icon: Smartphone, label: 'Install App' },
   ];
 
   const handleClearChat = () => {
