@@ -72,7 +72,7 @@ const LoginPage = () => {
 
           {/* Footer */}
           <p className="text-center text-xs text-muted-foreground">
-            By signing in, you agree to grant access to Google Sheets for contact storage
+            SaveMyName — From card to contact, instantly
           </p>
         </CardContent>
       </Card>
