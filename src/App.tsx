@@ -14,6 +14,7 @@ import PremiumPage from '@/pages/PremiumPage';
 import InstallPage from '@/pages/InstallPage';
 import AppLayout from '@/components/layout/AppLayout';
 import NotFound from '@/pages/NotFound';
+import OfflineWarning from '@/components/OfflineWarning';
 import { Loader2 } from 'lucide-react';
 
 const queryClient = new QueryClient();
@@ -54,6 +55,7 @@ const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <OfflineWarning />
       <Toaster />
       <Sonner />
       <BrowserRouter>

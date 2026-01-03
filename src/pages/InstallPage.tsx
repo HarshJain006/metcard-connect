@@ -69,7 +69,7 @@ const InstallPage = () => {
               Install {APP_INFO.name}
             </CardTitle>
             <CardDescription className="text-muted-foreground text-base">
-              Add to your home screen for the best experience
+              Install the app on your device for offline access and native experience
             </CardDescription>
           </div>
         </CardHeader>
