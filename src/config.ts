@@ -2,6 +2,10 @@
 // Change this to your backend URL (Docker container base URL)
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://savemyname.in';
 
+// Razorpay Configuration
+// Replace with your Razorpay Key ID (publishable key - safe to expose in frontend)
+export const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_XXXXXXXXXX';
+
 // API Endpoints
 export const API_ENDPOINTS = {
   // Auth - Google OAuth
@@ -14,6 +18,11 @@ export const API_ENDPOINTS = {
   EXTRACT_CONTACT: '/api/extract-contact', // POST - Extract contact from image/text
   APPEND_CONTACT: '/api/append-contact',   // POST - Append contact to Google Sheet
   GET_CONTACTS: '/api/contacts',           // GET - Get all contacts from sheet
+  
+  // Payments - Razorpay
+  PAYMENT_CREATE_ORDER: '/api/payment/create-order', // POST - Create Razorpay order
+  PAYMENT_VERIFY: '/api/payment/verify',             // POST - Verify payment signature
+  PAYMENT_STATUS: '/api/payment/status',             // GET - Get user's subscription status
 } as const;
 
 // App Info
