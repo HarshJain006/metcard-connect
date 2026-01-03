@@ -4,15 +4,16 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://savemy
 
 // API Endpoints
 export const API_ENDPOINTS = {
-  // Auth
-  AUTH_LOGIN: '/auth/google/login',
-  AUTH_LOGOUT: '/auth/logout',
-  AUTH_ME: '/api/auth/me',
+  // Auth - Google OAuth
+  AUTH_LOGIN: '/auth/google/login',       // GET - Initiates Google OAuth login
+  AUTH_CALLBACK: '/auth/google/callback', // GET - OAuth callback handler
+  AUTH_ME: '/api/auth/me',                // GET - Get current user info
+  AUTH_LOGOUT: '/auth/logout',            // GET - Logout user
   
   // Contacts
-  EXTRACT_CONTACT: '/api/extract-contact',
-  APPEND_CONTACT: '/api/append-contact',
-  GET_CONTACTS: '/api/contacts',
+  EXTRACT_CONTACT: '/api/extract-contact', // POST - Extract contact from image/text
+  APPEND_CONTACT: '/api/append-contact',   // POST - Append contact to Google Sheet
+  GET_CONTACTS: '/api/contacts',           // GET - Get all contacts from sheet
 } as const;
 
 // App Info

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useChatStore } from '@/stores/chatStore';
@@ -10,10 +10,13 @@ import {
   Menu,
   X,
   LogOut,
-  Trash2
+  Trash2,
+  Download,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import ThemeToggle from '@/components/ThemeToggle';
+import { useTheme } from '@/hooks/useTheme';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,11 +29,47 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
 const RadialNav = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
   const location = useLocation();
   const { logout } = useAuthStore();
   const { clearChat } = useChatStore();
+  const { theme, toggleTheme } = useTheme();
+
+  useEffect(() => {
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstalled(true);
+    }
+
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      setIsInstalled(true);
+    }
+    setDeferredPrompt(null);
+    setIsOpen(false);
+  };
 
   const navItems = [
     { path: '/', icon: MessageSquare, label: 'Chat' },
@@ -134,6 +173,30 @@ const RadialNav = () => {
             </AlertDialogContent>
           </AlertDialog>
 
+          {/* Install App */}
+          {!isInstalled && deferredPrompt && (
+            <button 
+              onClick={handleInstall}
+              className="flex items-center gap-3 px-4 py-2.5 rounded-r-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 shadow-md"
+            >
+              <Download className="w-5 h-5 flex-shrink-0" />
+              <span className="pr-2">Install App</span>
+            </button>
+          )}
+
+          {/* Theme Toggle */}
+          <button 
+            onClick={toggleTheme}
+            className="flex items-center gap-3 px-4 py-2.5 rounded-r-full bg-sidebar text-muted-foreground hover:bg-sidebar-accent transition-all duration-300 shadow-md"
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-5 h-5 flex-shrink-0" />
+            ) : (
+              <Moon className="w-5 h-5 flex-shrink-0" />
+            )}
+            <span className="pr-2">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+          </button>
+
           {/* Sign Out */}
           <button 
             onClick={logout}
@@ -142,11 +205,6 @@ const RadialNav = () => {
             <LogOut className="w-5 h-5 flex-shrink-0" />
             <span className="pr-2">Sign Out</span>
           </button>
-
-          {/* Theme Toggle */}
-          <div className="px-4 py-2.5 rounded-r-full bg-sidebar shadow-md">
-            <ThemeToggle />
-          </div>
         </nav>
       </div>
     </>
