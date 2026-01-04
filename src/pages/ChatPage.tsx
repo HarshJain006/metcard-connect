@@ -2,12 +2,12 @@ import { useState, useRef, useEffect } from 'react';
 import { useChatStore, type ChatMessage } from '@/stores/chatStore';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Camera, Send, X, Loader2, Building, Mail, Phone, User, Briefcase, Plus, Check, Edit3, Image } from 'lucide-react';
+import { Camera, Send, X, Loader2, Building, Mail, Phone, User, Briefcase, Plus, Check, Edit3, Image, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Contact } from '@/stores/chatStore';
 
 const ChatPage = () => {
-  const { messages, isProcessing, extractContact, extractContactFromText, appendContact } = useChatStore();
+  const { messages, isProcessing, extractContact, extractContactFromText, appendContact, updateMessageContact, reprocessContact } = useChatStore();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [textInput, setTextInput] = useState('');
@@ -81,6 +81,9 @@ const ChatPage = () => {
               key={message.id} 
               message={message} 
               onAddToSheet={appendContact}
+              onUpdateContact={updateMessageContact}
+              onReprocess={reprocessContact}
+              isProcessing={isProcessing}
             />
           ))}
         </div>
@@ -186,13 +189,17 @@ const ChatPage = () => {
 interface MessageBubbleProps {
   message: ChatMessage;
   onAddToSheet: (contact: Contact) => Promise<boolean>;
+  onUpdateContact: (messageId: string, contact: Contact) => void;
+  onReprocess: (contactId: string) => Promise<Contact | null>;
+  isProcessing: boolean;
 }
 
-const MessageBubble = ({ message, onAddToSheet }: MessageBubbleProps) => {
+const MessageBubble = ({ message, onAddToSheet, onUpdateContact, onReprocess, isProcessing }: MessageBubbleProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContact, setEditedContact] = useState<Contact | null>(message.contact || null);
   const [isAdding, setIsAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
+  const [isReprocessing, setIsReprocessing] = useState(false);
 
   const handleAddToSheet = async () => {
     if (!editedContact) return;
@@ -202,6 +209,23 @@ const MessageBubble = ({ message, onAddToSheet }: MessageBubbleProps) => {
     if (success) {
       setIsAdded(true);
     }
+  };
+
+  const handleSaveEdit = () => {
+    if (editedContact) {
+      onUpdateContact(message.id, editedContact);
+    }
+    setIsEditing(false);
+  };
+
+  const handleReprocess = async () => {
+    if (!message.contact?.id) return;
+    setIsReprocessing(true);
+    const newContact = await onReprocess(message.contact.id);
+    if (newContact) {
+      setEditedContact(newContact);
+    }
+    setIsReprocessing(false);
   };
 
   if (message.type === 'system') {
@@ -252,7 +276,7 @@ const MessageBubble = ({ message, onAddToSheet }: MessageBubbleProps) => {
                 <EditableContactCard 
                   contact={editedContact} 
                   onChange={setEditedContact}
-                  onSave={() => setIsEditing(false)}
+                  onSave={handleSaveEdit}
                 />
               ) : (
                 <ContactCard contact={editedContact || message.contact} />
@@ -264,7 +288,7 @@ const MessageBubble = ({ message, onAddToSheet }: MessageBubbleProps) => {
               <div className="flex gap-2">
                 <Button
                   onClick={handleAddToSheet}
-                  disabled={isAdding}
+                  disabled={isAdding || isProcessing}
                   className="flex-1 bg-primary hover:bg-primary-dark text-primary-foreground"
                 >
                   {isAdding ? (
@@ -278,9 +302,25 @@ const MessageBubble = ({ message, onAddToSheet }: MessageBubbleProps) => {
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsEditing(!isEditing)}
+                  disabled={isProcessing}
                   className="text-muted-foreground hover:text-foreground"
+                  title="Edit contact"
                 >
                   <Edit3 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleReprocess}
+                  disabled={isReprocessing || isProcessing}
+                  className="text-muted-foreground hover:text-primary"
+                  title="Re-scan card (Pro)"
+                >
+                  {isReprocessing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4" />
+                  )}
                 </Button>
               </div>
             )}
