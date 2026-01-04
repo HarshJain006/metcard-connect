@@ -31,6 +31,7 @@ interface ChatState {
   // Actions
   addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => string;
   updateMessage: (id: string, updates: Partial<ChatMessage>) => void;
+  updateMessageContact: (id: string, contact: Contact) => void;
   removeMessage: (id: string) => void;
   clearChat: () => void;
   setProcessing: (processing: boolean) => void;
@@ -39,6 +40,7 @@ interface ChatState {
   extractContact: (imageFile: File) => Promise<Contact | null>;
   extractContactFromText: (text: string) => Promise<Contact | null>;
   appendContact: (contact: Contact) => Promise<boolean>;
+  reprocessContact: (contactId: string, imageFile?: File) => Promise<Contact | null>;
 }
 
 const generateId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -66,6 +68,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set((state) => ({
       messages: state.messages.map((msg) =>
         msg.id === id ? { ...msg, ...updates } : msg
+      ),
+    }));
+  },
+
+  updateMessageContact: (id, contact) => {
+    set((state) => ({
+      messages: state.messages.map((msg) =>
+        msg.id === id ? { ...msg, contact } : msg
       ),
     }));
   },
@@ -272,6 +282,71 @@ export const useChatStore = create<ChatState>((set, get) => ({
         content: '❌ Failed to add contact to sheet. Please try again.',
       });
       return false;
+    }
+  },
+
+  reprocessContact: async (contactId: string, imageFile?: File) => {
+    const { addMessage, setProcessing } = get();
+    const isDemoMode = useAuthStore.getState().isDemoMode;
+    
+    // Add loading message
+    const loadingId = addMessage({
+      type: 'bot',
+      isLoading: true,
+    });
+    
+    setProcessing(true);
+
+    // Demo mode - simulate reprocessing
+    if (isDemoMode || DEMO_MODE) {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const contact = generateMockContact();
+      
+      get().updateMessage(loadingId, {
+        isLoading: false,
+        contact,
+        content: 'Re-scanned! Here\'s the updated contact information:',
+      });
+      
+      setProcessing(false);
+      return contact;
+    }
+    
+    try {
+      const formData = new FormData();
+      formData.append('contactId', contactId);
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+      
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REPROCESS_CONTACT}`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to reprocess contact');
+      }
+      
+      const contact: Contact = await response.json();
+      
+      get().updateMessage(loadingId, {
+        isLoading: false,
+        contact,
+        content: 'Re-scanned! Here\'s the updated contact information:',
+      });
+      
+      setProcessing(false);
+      return contact;
+    } catch (error) {
+      console.error('Reprocess contact error:', error);
+      get().updateMessage(loadingId, {
+        isLoading: false,
+        content: 'Sorry, I couldn\'t reprocess the contact. Please try again.',
+      });
+      setProcessing(false);
+      return null;
     }
   },
 }));
