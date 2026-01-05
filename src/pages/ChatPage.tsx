@@ -2,17 +2,28 @@ import { useState, useRef, useEffect } from 'react';
 import { useChatStore, type ChatMessage } from '@/stores/chatStore';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Camera, Send, X, Loader2, Building, Mail, Phone, User, Briefcase, Plus, Check, Edit3, Image, RefreshCw } from 'lucide-react';
+import { Camera, Send, X, Loader2, Building, Mail, Phone, User, Briefcase, Plus, Check, Edit3, Image, RefreshCw, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Contact } from '@/stores/chatStore';
 
 const ChatPage = () => {
-  const { messages, isProcessing, extractContact, extractContactFromText, appendContact, updateMessageContact, reprocessContact } = useChatStore();
+  const { 
+    messages, 
+    isProcessing, 
+    extractContact, 
+    extractContactFromText, 
+    appendContact, 
+    updateMessageContact, 
+    deleteMessage,
+    setPendingRetake,
+    pendingRetakeMessageId
+  } = useChatStore();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [textInput, setTextInput] = useState('');
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const retakeCameraRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -40,9 +51,18 @@ const ChatPage = () => {
     }
   };
 
+  const handleRetakeImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // This is a retake - will replace the pending message
+      await extractContact(file, true);
+      if (retakeCameraRef.current) retakeCameraRef.current.value = '';
+    }
+  };
+
   const handleSend = async () => {
     if (selectedImage) {
-      await extractContact(selectedImage);
+      await extractContact(selectedImage, false);
       setSelectedImage(null);
       setPreviewUrl(null);
       if (cameraInputRef.current) cameraInputRef.current.value = '';
@@ -69,10 +89,25 @@ const ChatPage = () => {
     }
   };
 
+  const handleRetake = (messageId: string) => {
+    setPendingRetake(messageId);
+    retakeCameraRef.current?.click();
+  };
+
   const canSend = selectedImage || textInput.trim();
 
   return (
     <div className="flex flex-col h-full bg-gradient-hero">
+      {/* Hidden retake camera input */}
+      <input
+        ref={retakeCameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleRetakeImageSelect}
+        className="hidden"
+      />
+
       {/* Chat Messages */}
       <ScrollArea ref={scrollRef} className="flex-1 px-4 py-4">
         <div className="max-w-2xl mx-auto space-y-4">
@@ -82,7 +117,8 @@ const ChatPage = () => {
               message={message} 
               onAddToSheet={appendContact}
               onUpdateContact={updateMessageContact}
-              onReprocess={reprocessContact}
+              onRetake={handleRetake}
+              onDelete={deleteMessage}
               isProcessing={isProcessing}
             />
           ))}
@@ -188,44 +224,51 @@ const ChatPage = () => {
 
 interface MessageBubbleProps {
   message: ChatMessage;
-  onAddToSheet: (contact: Contact) => Promise<boolean>;
-  onUpdateContact: (messageId: string, contact: Contact) => void;
-  onReprocess: (contactId: string) => Promise<Contact | null>;
+  onAddToSheet: (contact: Contact, messageId: string) => Promise<boolean>;
+  onUpdateContact: (messageId: string, contact: Contact, needsConfirmation?: boolean) => void;
+  onRetake: (messageId: string) => void;
+  onDelete: (messageId: string) => void;
   isProcessing: boolean;
 }
 
-const MessageBubble = ({ message, onAddToSheet, onUpdateContact, onReprocess, isProcessing }: MessageBubbleProps) => {
+const MessageBubble = ({ message, onAddToSheet, onUpdateContact, onRetake, onDelete, isProcessing }: MessageBubbleProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContact, setEditedContact] = useState<Contact | null>(message.contact || null);
   const [isAdding, setIsAdding] = useState(false);
-  const [isAdded, setIsAdded] = useState(false);
-  const [isReprocessing, setIsReprocessing] = useState(false);
 
-  const handleAddToSheet = async () => {
+  // Sync editedContact when message.contact changes
+  useEffect(() => {
+    if (message.contact) {
+      setEditedContact(message.contact);
+    }
+  }, [message.contact]);
+
+  const handleSaveToSheet = async () => {
     if (!editedContact) return;
     setIsAdding(true);
-    const success = await onAddToSheet(editedContact);
+    await onAddToSheet(editedContact, message.id);
     setIsAdding(false);
-    if (success) {
-      setIsAdded(true);
-    }
   };
 
   const handleSaveEdit = () => {
     if (editedContact) {
-      onUpdateContact(message.id, editedContact);
+      // Mark as needs confirmation after edit
+      onUpdateContact(message.id, editedContact, true);
     }
     setIsEditing(false);
   };
 
-  const handleReprocess = async () => {
-    if (!message.contact?.id) return;
-    setIsReprocessing(true);
-    const newContact = await onReprocess(message.contact.id);
-    if (newContact) {
-      setEditedContact(newContact);
-    }
-    setIsReprocessing(false);
+  const handleCancelEdit = () => {
+    setEditedContact(message.contact || null);
+    setIsEditing(false);
+  };
+
+  const handleRetake = () => {
+    onRetake(message.id);
+  };
+
+  const handleDelete = () => {
+    onDelete(message.id);
   };
 
   if (message.type === 'system') {
@@ -277,17 +320,35 @@ const MessageBubble = ({ message, onAddToSheet, onUpdateContact, onReprocess, is
                   contact={editedContact} 
                   onChange={setEditedContact}
                   onSave={handleSaveEdit}
+                  onCancel={handleCancelEdit}
                 />
               ) : (
                 <ContactCard contact={editedContact || message.contact} />
               )}
             </div>
 
-            {/* Actions */}
-            {!isAdded && (
+            {/* Status & Actions */}
+            {message.isSaved ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-green-500 text-sm">
+                  <Check className="w-4 h-4" />
+                  <span>Saved to your sheet!</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDelete}
+                  className="text-muted-foreground hover:text-destructive h-8 w-8"
+                  title="Delete"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : message.needsConfirmation ? (
+              // Show save button for edited/retaken contacts
               <div className="flex gap-2">
                 <Button
-                  onClick={handleAddToSheet}
+                  onClick={handleSaveToSheet}
                   disabled={isAdding || isProcessing}
                   className="flex-1 bg-primary hover:bg-primary-dark text-primary-foreground"
                 >
@@ -296,7 +357,7 @@ const MessageBubble = ({ message, onAddToSheet, onUpdateContact, onReprocess, is
                   ) : (
                     <Plus className="w-4 h-4 mr-2" />
                   )}
-                  Add to Sheet
+                  Save to Sheet
                 </Button>
                 <Button
                   variant="ghost"
@@ -311,24 +372,57 @@ const MessageBubble = ({ message, onAddToSheet, onUpdateContact, onReprocess, is
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={handleReprocess}
-                  disabled={isReprocessing || isProcessing}
+                  onClick={handleRetake}
+                  disabled={isProcessing}
                   className="text-muted-foreground hover:text-primary"
-                  title="Re-scan card (Pro)"
+                  title="Retake photo"
                 >
-                  {isReprocessing ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <RefreshCw className="w-4 h-4" />
-                  )}
+                  <RefreshCw className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDelete}
+                  disabled={isProcessing}
+                  className="text-muted-foreground hover:text-destructive"
+                  title="Delete"
+                >
+                  <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
-            )}
-
-            {isAdded && (
-              <div className="flex items-center gap-2 text-green-500 text-sm">
-                <Check className="w-4 h-4" />
-                <span>Added to your sheet!</span>
+            ) : (
+              // Auto-saving in progress or action buttons
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsEditing(!isEditing)}
+                  disabled={isProcessing}
+                  className="text-muted-foreground hover:text-foreground"
+                  title="Edit contact"
+                >
+                  <Edit3 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleRetake}
+                  disabled={isProcessing}
+                  className="text-muted-foreground hover:text-primary"
+                  title="Retake photo"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDelete}
+                  disabled={isProcessing}
+                  className="text-muted-foreground hover:text-destructive"
+                  title="Delete"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
             )}
           </div>
@@ -377,9 +471,10 @@ interface EditableContactCardProps {
   contact: Contact;
   onChange: (contact: Contact) => void;
   onSave: () => void;
+  onCancel: () => void;
 }
 
-const EditableContactCard = ({ contact, onChange, onSave }: EditableContactCardProps) => {
+const EditableContactCard = ({ contact, onChange, onSave, onCancel }: EditableContactCardProps) => {
   const updateField = (field: keyof Contact, value: string) => {
     onChange({ ...contact, [field]: value });
   };
@@ -416,9 +511,16 @@ const EditableContactCard = ({ contact, onChange, onSave }: EditableContactCardP
         onChange={(v) => updateField('email', v)}
         placeholder="Email"
       />
-      <Button onClick={onSave} size="sm" variant="ghost" className="w-full text-primary">
-        Done Editing
-      </Button>
+      <div className="flex gap-2 pt-2">
+        <Button onClick={onSave} size="sm" className="flex-1 bg-primary hover:bg-primary-dark text-primary-foreground">
+          <Check className="w-4 h-4 mr-1" />
+          Done
+        </Button>
+        <Button onClick={onCancel} size="sm" variant="ghost" className="flex-1 text-muted-foreground">
+          <X className="w-4 h-4 mr-1" />
+          Cancel
+        </Button>
+      </div>
     </div>
   );
 };
