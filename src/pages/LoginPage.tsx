@@ -1,8 +1,10 @@
+import { Link } from 'react-router-dom';
 import { APP_INFO } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreditCard, FileSpreadsheet, Scan } from 'lucide-react';
+import { FileSpreadsheet, Scan } from 'lucide-react';
+import logo from '@/assets/logo.png';
 
 const LoginPage = () => {
   const { login, loginDemo, isLoading } = useAuthStore();
@@ -17,8 +19,8 @@ const LoginPage = () => {
       <Card className="w-full max-w-md bg-card border-border/50 shadow-2xl relative z-10 animate-bounce-in">
         <CardHeader className="text-center space-y-4 pb-2">
           {/* Logo */}
-          <div className="mx-auto w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg glow-primary">
-            <CreditCard className="w-10 h-10 text-primary-foreground" />
+          <div className="mx-auto w-20 h-20 rounded-2xl overflow-hidden shadow-lg glow-primary">
+            <img src={logo} alt="SaveMyName Logo" className="w-full h-full object-cover" />
           </div>
           
           <div className="space-y-2">
@@ -71,9 +73,17 @@ const LoginPage = () => {
           </Button>
 
           {/* Footer */}
-          <p className="text-center text-xs text-muted-foreground">
-            SaveMyName — From card to contact, instantly
-          </p>
+          <div className="text-center text-xs text-muted-foreground space-y-2">
+            <p>SaveMyName — From card to contact, instantly</p>
+            <div className="flex items-center justify-center gap-4">
+              <Link to="/privacy" className="hover:text-primary transition-colors">
+                Privacy Policy
+              </Link>
+              <Link to="/terms" className="hover:text-primary transition-colors">
+                Terms of Service
+              </Link>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
