@@ -7,6 +7,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { useAuthStore } from '@/stores/authStore';
 import LoginPage from '@/pages/LoginPage';
+import WelcomePage from '@/pages/WelcomePage';
+import PrivacyPage from '@/pages/PrivacyPage';
+import TermsPage from '@/pages/TermsPage';
 import ChatPage from '@/pages/ChatPage';
 import HistoryPage from '@/pages/HistoryPage';
 import SheetPage from '@/pages/SheetPage';
@@ -62,8 +65,11 @@ const App = () => (
         <AuthInitializer>
           <Routes>
             {/* Public routes */}
+            <Route path="/welcome" element={<WelcomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/install" element={<InstallPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
 
             {/* Protected routes */}
             <Route
