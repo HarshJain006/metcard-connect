@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useChatStore } from '@/stores/chatStore';
+import { useUsageStore, FREE_SCAN_LIMIT, FREE_CONTACT_LIMIT } from '@/stores/usageStore';
 import { APP_INFO } from '@/config';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Progress } from '@/components/ui/progress';
 import { 
   MessageSquare, 
   FileSpreadsheet, 
@@ -12,9 +14,10 @@ import {
   Crown, 
   Trash2, 
   LogOut, 
-  Menu, 
   X,
-  CreditCard
+  CreditCard,
+  Scan,
+  Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -40,6 +43,14 @@ const AppSidebar = ({ isMobile = false, isOpen = true, onClose }: AppSidebarProp
   const location = useLocation();
   const { user, logout } = useAuthStore();
   const { clearChat } = useChatStore();
+  const { scansUsed, contactsSaved, isPremium, fetchUsage } = useUsageStore();
+
+  useEffect(() => {
+    fetchUsage();
+  }, [fetchUsage]);
+
+  const scanProgress = Math.min((scansUsed / FREE_SCAN_LIMIT) * 100, 100);
+  const contactProgress = Math.min((contactsSaved / FREE_CONTACT_LIMIT) * 100, 100);
 
   const navItems = [
     { path: '/', icon: MessageSquare, label: 'Chat' },
@@ -95,6 +106,49 @@ const AppSidebar = ({ isMobile = false, isOpen = true, onClose }: AppSidebarProp
               <p className="text-xs text-muted-foreground truncate">{user.email}</p>
             </div>
           </div>
+
+          {/* Usage Indicator */}
+          {!isPremium && (
+            <div className="mt-3 p-3 rounded-lg bg-sidebar-accent/50 space-y-3">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-1.5 text-muted-foreground">
+                    <Scan className="w-3.5 h-3.5" />
+                    Scans
+                  </span>
+                  <span className={cn(
+                    "font-medium",
+                    scansUsed >= FREE_SCAN_LIMIT ? "text-destructive" : "text-foreground"
+                  )}>
+                    {scansUsed}/{FREE_SCAN_LIMIT}
+                  </span>
+                </div>
+                <Progress value={scanProgress} className="h-1.5" />
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-1.5 text-muted-foreground">
+                    <Users className="w-3.5 h-3.5" />
+                    Contacts
+                  </span>
+                  <span className={cn(
+                    "font-medium",
+                    contactsSaved >= FREE_CONTACT_LIMIT ? "text-destructive" : "text-foreground"
+                  )}>
+                    {contactsSaved}/{FREE_CONTACT_LIMIT}
+                  </span>
+                </div>
+                <Progress value={contactProgress} className="h-1.5" />
+              </div>
+              <NavLink
+                to="/premium"
+                onClick={onClose}
+                className="block text-center text-xs text-primary hover:underline font-medium"
+              >
+                Upgrade for unlimited
+              </NavLink>
+            </div>
+          )}
         </div>
       )}
 
