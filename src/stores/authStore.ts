@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { API_BASE_URL, API_ENDPOINTS } from '@/config';
-import { DEMO_MODE, mockUser } from '@/lib/mockData';
 
 export interface User {
   id: string;
@@ -16,15 +15,15 @@ interface AuthState {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  isDemoMode: boolean;
+  connectionError: boolean;
   
   // Actions
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   checkAuth: () => Promise<boolean>;
   login: () => void;
-  loginDemo: () => void;
   logout: () => Promise<void>;
+  setConnectionError: (error: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -33,36 +32,25 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isLoading: true,
       isAuthenticated: false,
-      isDemoMode: false,
+      connectionError: false,
 
       setUser: (user) => set({ 
         user, 
         isAuthenticated: !!user,
-        isLoading: false 
+        isLoading: false,
+        connectionError: false,
       }),
 
       setLoading: (isLoading) => set({ isLoading }),
 
+      setConnectionError: (connectionError) => set({ connectionError }),
+
       checkAuth: async () => {
-        // Check if we're in demo mode from storage
-        const { isDemoMode, user } = get();
-        if (isDemoMode && user) {
-          set({ isLoading: false, isAuthenticated: true });
-          return true;
-        }
-
-        // If demo mode is enabled globally
-        if (DEMO_MODE) {
-          set({ 
-            user: mockUser, 
-            isAuthenticated: true, 
-            isLoading: false,
-            isDemoMode: true
-          });
-          return true;
-        }
-
-        set({ isLoading: true });
+        // Check if we have a cached user
+        const { user } = get();
+        
+        set({ isLoading: true, connectionError: false });
+        
         try {
           const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH_ME}`, {
             credentials: 'include',
@@ -73,23 +61,34 @@ export const useAuthStore = create<AuthState>()(
             set({ 
               user: userData, 
               isAuthenticated: true, 
-              isLoading: false 
+              isLoading: false,
+              connectionError: false,
             });
             return true;
           } else {
             set({ 
               user: null, 
               isAuthenticated: false, 
-              isLoading: false 
+              isLoading: false,
+              connectionError: false,
             });
             return false;
           }
         } catch (error) {
           console.error('Auth check failed:', error);
+          // If we had a cached user and got a connection error, keep them logged in
+          if (user) {
+            set({ 
+              isLoading: false,
+              connectionError: true,
+            });
+            return true;
+          }
           set({ 
             user: null, 
             isAuthenticated: false, 
-            isLoading: false 
+            isLoading: false,
+            connectionError: true,
           });
           return false;
         }
@@ -100,32 +99,19 @@ export const useAuthStore = create<AuthState>()(
         window.location.href = `${API_BASE_URL}${API_ENDPOINTS.AUTH_LOGIN}`;
       },
 
-      loginDemo: () => {
-        set({
-          user: mockUser,
-          isAuthenticated: true,
-          isLoading: false,
-          isDemoMode: true,
-        });
-      },
-
       logout: async () => {
-        const { isDemoMode } = get();
-        
-        if (!isDemoMode) {
-          try {
-            await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH_LOGOUT}`, {
-              credentials: 'include',
-            });
-          } catch (error) {
-            console.error('Logout failed:', error);
-          }
+        try {
+          await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH_LOGOUT}`, {
+            credentials: 'include',
+          });
+        } catch (error) {
+          console.error('Logout failed:', error);
         }
         
         set({ 
           user: null, 
           isAuthenticated: false,
-          isDemoMode: false,
+          connectionError: false,
         });
         window.location.href = '/login';
       },
@@ -133,8 +119,7 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'savemyname-auth',
       partialize: (state) => ({ 
-        user: state.user, 
-        isDemoMode: state.isDemoMode 
+        user: state.user,
       }),
     }
   )

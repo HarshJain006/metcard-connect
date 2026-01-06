@@ -1,7 +1,5 @@
 import { create } from 'zustand';
 import { API_BASE_URL, API_ENDPOINTS } from '@/config';
-import { DEMO_MODE, mockContacts } from '@/lib/mockData';
-import { useAuthStore } from './authStore';
 import type { Contact } from './chatStore';
 
 interface ContactsState {
@@ -20,14 +18,6 @@ export const useContactsStore = create<ContactsState>((set, get) => ({
   error: null,
 
   fetchContacts: async (limit = 50) => {
-    const isDemoMode = useAuthStore.getState().isDemoMode;
-    
-    // Demo mode - return mock data
-    if (isDemoMode || DEMO_MODE) {
-      set({ contacts: mockContacts, isLoading: false });
-      return;
-    }
-
     set({ isLoading: true, error: null });
     
     try {
@@ -47,7 +37,7 @@ export const useContactsStore = create<ContactsState>((set, get) => ({
     } catch (error) {
       console.error('Fetch contacts error:', error);
       set({ 
-        error: 'Failed to load contacts', 
+        error: 'Unable to load contacts. Please check your connection.', 
         isLoading: false 
       });
     }
