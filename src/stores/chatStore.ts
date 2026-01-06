@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { API_BASE_URL, API_ENDPOINTS } from '@/config';
-import { DEMO_MODE, generateMockContact } from '@/lib/mockData';
-import { useAuthStore } from './authStore';
+import { useUsageStore } from './usageStore';
 
 export interface Contact {
   id: string;
@@ -22,7 +21,7 @@ export interface ChatMessage {
   contact?: Contact;
   isLoading?: boolean;
   isSaved?: boolean;
-  needsConfirmation?: boolean; // For edited/retaken contacts
+  needsConfirmation?: boolean;
   timestamp: Date;
 }
 
@@ -118,7 +117,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   extractContact: async (imageFile: File, isRetake = false) => {
     const { addMessage, updateMessage, setProcessing, pendingRetakeMessageId, setPendingRetake, deleteMessage } = get();
-    const isDemoMode = useAuthStore.getState().isDemoMode;
+    const usageStore = useUsageStore.getState();
+    
+    // Check scan limit
+    if (!usageStore.canScan()) {
+      addMessage({
+        type: 'system',
+        content: '⚠️ You\'ve reached your free scan limit (15/month). Upgrade to Premium for unlimited scans!',
+      });
+      return null;
+    }
     
     // If this is a retake, delete the old message first
     if (isRetake && pendingRetakeMessageId) {
@@ -142,30 +150,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
     });
     
     setProcessing(true);
-
-    // Demo mode - simulate extraction
-    if (isDemoMode || DEMO_MODE) {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const contact = generateMockContact();
-      
-      updateMessage(loadingId, {
-        isLoading: false,
-        contact,
-        content: 'I found the following contact information:',
-        isSaved: false,
-        needsConfirmation: isRetake,
-      });
-      
-      // Auto-save if not a retake
-      if (!isRetake) {
-        setProcessing(false);
-        await get().saveContactAndMarkSaved(contact, loadingId);
-      } else {
-        setProcessing(false);
-      }
-      
-      return contact;
-    }
     
     try {
       const formData = new FormData();
@@ -182,6 +166,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
       
       const contact: Contact = await response.json();
+      
+      // Increment scan usage
+      usageStore.incrementScans();
       
       // Update loading message with contact
       updateMessage(loadingId, {
@@ -205,7 +192,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       console.error('Extract contact error:', error);
       updateMessage(loadingId, {
         isLoading: false,
-        content: 'Sorry, I couldn\'t extract the contact information. Please try again with a clearer image.',
+        content: 'Sorry, I couldn\'t extract the contact information. Please check your connection and try again.',
       });
       setProcessing(false);
       return null;
@@ -214,7 +201,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   extractContactFromText: async (text: string) => {
     const { addMessage, updateMessage, setProcessing } = get();
-    const isDemoMode = useAuthStore.getState().isDemoMode;
+    const usageStore = useUsageStore.getState();
+    
+    // Check scan limit
+    if (!usageStore.canScan()) {
+      addMessage({
+        type: 'system',
+        content: '⚠️ You\'ve reached your free scan limit (15/month). Upgrade to Premium for unlimited scans!',
+      });
+      return null;
+    }
     
     // Add user message with text
     addMessage({
@@ -229,25 +225,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
     });
     
     setProcessing(true);
-
-    // Demo mode - simulate extraction
-    if (isDemoMode || DEMO_MODE) {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const contact = generateMockContact();
-      
-      updateMessage(loadingId, {
-        isLoading: false,
-        contact,
-        content: 'I found the following contact information:',
-        isSaved: false,
-      });
-      
-      // Auto-save
-      setProcessing(false);
-      await get().saveContactAndMarkSaved(contact, loadingId);
-      
-      return contact;
-    }
     
     try {
       const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.EXTRACT_CONTACT}`, {
@@ -265,6 +242,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       
       const contact: Contact = await response.json();
       
+      // Increment scan usage
+      usageStore.incrementScans();
+      
       updateMessage(loadingId, {
         isLoading: false,
         contact,
@@ -281,7 +261,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       console.error('Extract contact from text error:', error);
       updateMessage(loadingId, {
         isLoading: false,
-        content: "Sorry, I couldn't extract the contact information. Please try again.",
+        content: "Sorry, I couldn't extract the contact information. Please check your connection and try again.",
       });
       setProcessing(false);
       return null;
@@ -290,19 +270,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   appendContact: async (contact: Contact, messageId?: string) => {
     const { addMessage, updateMessage } = get();
-    const isDemoMode = useAuthStore.getState().isDemoMode;
-
-    // Demo mode - simulate adding
-    if (isDemoMode || DEMO_MODE) {
-      await new Promise(resolve => setTimeout(resolve, 500));
+    const usageStore = useUsageStore.getState();
+    
+    // Check contact limit
+    if (!usageStore.canSaveContact()) {
       addMessage({
         type: 'system',
-        content: `✅ ${contact.name} has been added to your Google Sheet!`,
+        content: '⚠️ You\'ve reached your free contact limit (25 contacts). Upgrade to Premium for unlimited contacts!',
       });
-      if (messageId) {
-        updateMessage(messageId, { isSaved: true, needsConfirmation: false });
-      }
-      return true;
+      return false;
     }
     
     try {
@@ -319,6 +295,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         throw new Error('Failed to add contact to sheet');
       }
       
+      // Increment contact usage
+      usageStore.incrementContacts();
+      
       addMessage({
         type: 'system',
         content: `✅ ${contact.name} has been added to your Google Sheet!`,
@@ -333,7 +312,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       console.error('Append contact error:', error);
       addMessage({
         type: 'system',
-        content: '❌ Failed to add contact to sheet. Please try again.',
+        content: '❌ Failed to add contact to sheet. Please check your connection and try again.',
       });
       return false;
     }
@@ -341,17 +320,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   saveContactAndMarkSaved: async (contact: Contact, messageId: string) => {
     const { addMessage, updateMessage } = get();
-    const isDemoMode = useAuthStore.getState().isDemoMode;
-
-    // Demo mode - simulate saving
-    if (isDemoMode || DEMO_MODE) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      updateMessage(messageId, { isSaved: true });
+    const usageStore = useUsageStore.getState();
+    
+    // Check contact limit
+    if (!usageStore.canSaveContact()) {
       addMessage({
         type: 'system',
-        content: `✅ ${contact.name} saved to your Google Sheet!`,
+        content: '⚠️ You\'ve reached your free contact limit (25 contacts). Upgrade to Premium for unlimited contacts!',
       });
-      return true;
+      updateMessage(messageId, { needsConfirmation: true });
+      return false;
     }
     
     try {
@@ -367,6 +345,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       if (!response.ok) {
         throw new Error('Failed to save contact');
       }
+      
+      // Increment contact usage
+      usageStore.incrementContacts();
       
       updateMessage(messageId, { isSaved: true });
       addMessage({
