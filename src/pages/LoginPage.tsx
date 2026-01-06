@@ -3,11 +3,11 @@ import { APP_INFO } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileSpreadsheet, Scan, AlertCircle } from 'lucide-react';
+import { FileSpreadsheet, Scan } from 'lucide-react';
 import logo from '@/assets/logo.png';
 
 const LoginPage = () => {
-  const { login, isLoading, connectionError } = useAuthStore();
+  const { login, loginDemo, isLoading } = useAuthStore();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-header p-4">
@@ -34,14 +34,6 @@ const LoginPage = () => {
         </CardHeader>
 
         <CardContent className="space-y-6 pt-4">
-          {/* Connection Error */}
-          {connectionError && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-yellow-600 dark:text-yellow-400 text-sm">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>Connection issue. Please check your network and try again.</span>
-            </div>
-          )}
-
           {/* Features */}
           <div className="space-y-3">
             <FeatureItem 
@@ -68,6 +60,16 @@ const LoginPage = () => {
               <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
             <span className="group-hover:text-primary transition-colors">Sign in with Google</span>
+          </Button>
+
+          {/* Demo Button */}
+          <Button
+            onClick={loginDemo}
+            variant="ghost"
+            size="lg"
+            className="w-full h-10 text-sm text-muted-foreground hover:text-primary"
+          >
+            Try Demo Mode
           </Button>
 
           {/* Footer */}

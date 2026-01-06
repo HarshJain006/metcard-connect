@@ -327,57 +327,30 @@ const MessageBubble = ({ message, onAddToSheet, onUpdateContact, onRetake, onDel
               )}
             </div>
 
-            {/* Action Buttons - Always visible */}
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2">
-                {!isEditing && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setIsEditing(true)}
-                      disabled={isProcessing}
-                      className="text-muted-foreground hover:text-foreground h-8 w-8"
-                      title="Edit contact"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleRetake}
-                      disabled={isProcessing}
-                      className="text-muted-foreground hover:text-primary h-8 w-8"
-                      title="Retake photo"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleDelete}
-                      disabled={isProcessing}
-                      className="text-muted-foreground hover:text-destructive h-8 w-8"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </>
-                )}
-              </div>
-              
-              {/* Status indicator or Save button */}
-              {message.isSaved ? (
+            {/* Status & Actions */}
+            {message.isSaved ? (
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-green-500 text-sm">
                   <Check className="w-4 h-4" />
-                  <span>Saved!</span>
+                  <span>Saved to your sheet!</span>
                 </div>
-              ) : message.needsConfirmation ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDelete}
+                  className="text-muted-foreground hover:text-destructive h-8 w-8"
+                  title="Delete"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : message.needsConfirmation ? (
+              // Show save button for edited/retaken contacts
+              <div className="flex gap-2">
                 <Button
                   onClick={handleSaveToSheet}
                   disabled={isAdding || isProcessing}
-                  size="sm"
-                  className="bg-primary hover:bg-primary-dark text-primary-foreground"
+                  className="flex-1 bg-primary hover:bg-primary-dark text-primary-foreground"
                 >
                   {isAdding ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -386,8 +359,72 @@ const MessageBubble = ({ message, onAddToSheet, onUpdateContact, onRetake, onDel
                   )}
                   Save to Sheet
                 </Button>
-              ) : null}
-            </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsEditing(!isEditing)}
+                  disabled={isProcessing}
+                  className="text-muted-foreground hover:text-foreground"
+                  title="Edit contact"
+                >
+                  <Edit3 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleRetake}
+                  disabled={isProcessing}
+                  className="text-muted-foreground hover:text-primary"
+                  title="Retake photo"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDelete}
+                  disabled={isProcessing}
+                  className="text-muted-foreground hover:text-destructive"
+                  title="Delete"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : (
+              // Auto-saving in progress or action buttons
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsEditing(!isEditing)}
+                  disabled={isProcessing}
+                  className="text-muted-foreground hover:text-foreground"
+                  title="Edit contact"
+                >
+                  <Edit3 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleRetake}
+                  disabled={isProcessing}
+                  className="text-muted-foreground hover:text-primary"
+                  title="Retake photo"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDelete}
+                  disabled={isProcessing}
+                  className="text-muted-foreground hover:text-destructive"
+                  title="Delete"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
           </div>
         ) : (
           <p className="text-sm">{message.content}</p>
