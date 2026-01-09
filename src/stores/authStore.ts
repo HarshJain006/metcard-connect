@@ -95,6 +95,8 @@ export const useAuthStore = create<AuthState>()(
       },
 
       login: () => {
+        // Clear any previous auth state before redirecting
+        set({ isLoading: true, connectionError: false });
         // Redirect to backend OAuth login endpoint
         window.location.href = `${API_BASE_URL}${API_ENDPOINTS.AUTH_LOGIN}`;
       },
@@ -108,11 +110,15 @@ export const useAuthStore = create<AuthState>()(
           console.error('Logout failed:', error);
         }
         
+        // Clear persisted state
         set({ 
           user: null, 
           isAuthenticated: false,
           connectionError: false,
+          isLoading: false,
         });
+        
+        // Redirect to login
         window.location.href = '/login';
       },
     }),
