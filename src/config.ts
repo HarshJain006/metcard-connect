@@ -1,6 +1,6 @@
 // API Configuration
-// For local development, point directly at your FastAPI server.
-export const API_BASE_URL = 'http://127.0.0.1:8000';
+// Dev tunnel URL for testing (change to https://savemyname.in for production)
+export const API_BASE_URL = 'https://q58217l9-8000.inc1.devtunnels.ms';
 
 // Razorpay Configuration
 // Replace with your Razorpay Key ID (publishable key - safe to expose in frontend)
