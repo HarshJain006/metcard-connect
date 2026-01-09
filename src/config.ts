@@ -1,6 +1,6 @@
 // API Configuration
 // Change this to your backend URL (Docker container base URL)
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://savemyname.in';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 // Razorpay Configuration
 // Replace with your Razorpay Key ID (publishable key - safe to expose in frontend)
