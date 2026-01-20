@@ -30,7 +30,7 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
-      isLoading: true,
+      isLoading: false, // Start as false - don't block UI on startup
       isAuthenticated: false,
       connectionError: false,
 
@@ -46,10 +46,13 @@ export const useAuthStore = create<AuthState>()(
       setConnectionError: (connectionError) => set({ connectionError }),
 
       checkAuth: async () => {
-        // Check if we have a cached user
+        // Check if we have a cached user - trust it immediately for better UX
         const { user } = get();
         
-        set({ isLoading: true, connectionError: false });
+        // If we have a cached user, set authenticated immediately (don't show loading)
+        if (user) {
+          set({ isAuthenticated: true, isLoading: false });
+        }
         
         try {
           const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH_ME}`, {
@@ -66,6 +69,7 @@ export const useAuthStore = create<AuthState>()(
             });
             return true;
           } else {
+            // Server says not authenticated - clear cached user
             set({ 
               user: null, 
               isAuthenticated: false, 
@@ -80,10 +84,12 @@ export const useAuthStore = create<AuthState>()(
           if (user) {
             set({ 
               isLoading: false,
+              isAuthenticated: true,
               connectionError: true,
             });
             return true;
           }
+          // No cached user and can't reach server - just stop loading, don't block login
           set({ 
             user: null, 
             isAuthenticated: false, 
