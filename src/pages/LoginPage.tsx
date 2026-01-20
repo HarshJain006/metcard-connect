@@ -57,7 +57,6 @@ const LoginPage = () => {
           {/* Login Button */}
           <Button
             onClick={login}
-            disabled={isLoading}
             size="lg"
             className="w-full h-12 text-base font-medium bg-surface-2 hover:bg-surface-3 text-foreground border border-border/50 transition-all duration-200 hover:border-primary/50 group"
           >
