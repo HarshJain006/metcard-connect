@@ -62,14 +62,18 @@ const ChatPage = () => {
 
   const handleSend = async () => {
     if (selectedImage) {
-      await extractContact(selectedImage, false);
+      const imageToSend = selectedImage;
+      // Clear immediately for better UX
       setSelectedImage(null);
       setPreviewUrl(null);
       if (cameraInputRef.current) cameraInputRef.current.value = '';
       if (galleryInputRef.current) galleryInputRef.current.value = '';
+      // Then process
+      await extractContact(imageToSend, false);
     } else if (textInput.trim()) {
-      await extractContactFromText(textInput.trim());
+      const textToSend = textInput.trim();
       setTextInput('');
+      await extractContactFromText(textToSend);
     }
   };
 
