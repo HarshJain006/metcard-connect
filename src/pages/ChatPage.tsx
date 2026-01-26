@@ -63,12 +63,22 @@ const ChatPage = () => {
   const handleSend = async () => {
     if (selectedImage) {
       const imageToSend = selectedImage;
-      // Clear immediately for better UX
+      const urlToRevoke = previewUrl;
+      
+      // Clear state immediately and synchronously
       setSelectedImage(null);
       setPreviewUrl(null);
+      
+      // Clear file inputs
       if (cameraInputRef.current) cameraInputRef.current.value = '';
       if (galleryInputRef.current) galleryInputRef.current.value = '';
-      // Then process
+      
+      // Revoke object URL to free memory
+      if (urlToRevoke) {
+        URL.revokeObjectURL(urlToRevoke);
+      }
+      
+      // Then process asynchronously
       await extractContact(imageToSend, false);
     } else if (textInput.trim()) {
       const textToSend = textInput.trim();
