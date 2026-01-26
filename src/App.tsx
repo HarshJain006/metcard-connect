@@ -17,6 +17,7 @@ import HistoryPage from '@/pages/HistoryPage';
 import SheetPage from '@/pages/SheetPage';
 import PremiumPage from '@/pages/PremiumPage';
 import InstallPage from '@/pages/InstallPage';
+import DigitalCardPage from '@/pages/DigitalCardPage';
 import AppLayout from '@/components/layout/AppLayout';
 import NotFound from '@/pages/NotFound';
 import OfflineWarning from '@/components/OfflineWarning';
@@ -128,6 +129,7 @@ const App = () => (
               }
             >
               <Route path="/" element={<ChatPage />} />
+              <Route path="/my-card" element={<DigitalCardPage />} />
               <Route path="/sheet" element={<SheetPage />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/premium" element={<PremiumPage />} />

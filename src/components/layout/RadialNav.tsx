@@ -14,7 +14,8 @@ import {
   Download,
   Moon,
   Sun,
-  Smartphone
+  Smartphone,
+  CreditCard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
@@ -74,6 +75,7 @@ const RadialNav = () => {
 
   const navItems = [
     { path: '/', icon: MessageSquare, label: 'Chat' },
+    { path: '/my-card', icon: CreditCard, label: 'My Card' },
     { path: '/sheet', icon: FileSpreadsheet, label: 'Contacts' },
     { path: '/history', icon: Clock, label: 'History' },
     { path: '/premium', icon: Crown, label: 'Premium' },
